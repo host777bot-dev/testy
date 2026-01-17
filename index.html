@@ -1,23 +1,204 @@
-tu masz jeste raz i same zabespieczenia zrób 
 <!DOCTYPE html>
-<html>
+<html lang="pl">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>ProChat</title>
+    
+    <!-- Zabezpieczenia -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        frame-src http://bot.host2play.com:2042 https://bot.host2play.com;
+        script-src 'self' 'unsafe-inline';
+        style-src 'self' 'unsafe-inline';
+    ">
+    <meta name="referrer" content="no-referrer">
+    
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
+            width: 100%;
             overflow: hidden;
+            background: #1a1a1a;
         }
+        
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        
+        #loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loader {
+            text-align: center;
+            color: white;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-top: 5px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
         iframe {
             width: 100%;
             height: 100vh;
             border: none;
+            display: block;
+            background: white;
+        }
+        
+        #error-message {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 30px;
+            border-radius: 10px;
+            border-left: 5px solid #dc2626;
+            max-width: 500px;
+            text-align: center;
+            z-index: 10000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        #error-message h2 {
+            margin-bottom: 15px;
+        }
+        
+        #error-message button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        #error-message button:hover {
+            background: #b91c1c;
         }
     </style>
 </head>
 <body>
-    <iframe src="http://bot.host2play.com:2042"></iframe>
+    <!-- Ekran ładowania -->
+    <div id="loading">
+        <div class="loader">
+            <div class="spinner"></div>
+            <h2>Ładowanie ProChat...</h2>
+            <p>Łączenie z serwerem</p>
+        </div>
+    </div>
+    
+    <!-- Komunikat błędu -->
+    <div id="error-message">
+        <h2>⚠️ Błąd połączenia</h2>
+        <p>Nie można załadować panelu. Sprawdź połączenie z serwerem.</p>
+        <button onclick="reloadPage()">Spróbuj ponownie</button>
+    </div>
+    
+    <!-- Iframe z botem -->
+    <iframe 
+        id="bot-iframe"
+        src="http://bot.host2play.com:2042"
+        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
+        loading="eager"
+        importance="high"
+    ></iframe>
+
+    <script>
+        // Zabezpieczenia i obsługa ładowania
+        (function() {
+            'use strict';
+            
+            const iframe = document.getElementById('bot-iframe');
+            const loading = document.getElementById('loading');
+            const errorMessage = document.getElementById('error-message');
+            let loadTimeout;
+            
+            // Timeout na ładowanie (15 sekund)
+            loadTimeout = setTimeout(function() {
+                loading.classList.add('hidden');
+                errorMessage.style.display = 'block';
+            }, 15000);
+            
+            // Obsługa załadowania iframe
+            iframe.addEventListener('load', function() {
+                clearTimeout(loadTimeout);
+                setTimeout(function() {
+                    loading.classList.add('hidden');
+                }, 500);
+            });
+            
+            // Obsługa błędów
+            iframe.addEventListener('error', function() {
+                clearTimeout(loadTimeout);
+                loading.classList.add('hidden');
+                errorMessage.style.display = 'block';
+            });
+            
+            // Funkcja przeładowania
+            window.reloadPage = function() {
+                location.reload();
+            };
+            
+            // Zabezpieczenie przed clickjackingiem
+            if (window.top !== window.self) {
+                window.top.location = window.self.location;
+            }
+            
+            // Blokada inspect element (opcjonalnie)
+            /*
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+            });
+            
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'F12' || 
+                    (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+                    (e.ctrlKey && e.shiftKey && e.key === 'C') ||
+                    (e.ctrlKey && e.key === 'U')) {
+                    e.preventDefault();
+                }
+            });
+            */
+            
+        })();
+    </script>
 </body>
 </html>
